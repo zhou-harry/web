@@ -5,11 +5,12 @@ var gulp = require('gulp'),
     sass = require('gulp-ruby-sass'),
     autoprefixer = require('gulp-autoprefixer'),
     browserSync = require('browser-sync').create();
-//引入代理模块
-var proxy = require('http-proxy-middleware');
+
+var nodemon = require('gulp-nodemon');
+
 
 var DEST = 'build/';
-
+var cookies = {};
 
 // TODO: Maybe we can simplify how sass compile the minify and unminify version
 var compileSASS = function (filename, options) {
@@ -19,29 +20,6 @@ var compileSASS = function (filename, options) {
         .pipe(gulp.dest(DEST + '/css'))
         .pipe(browserSync.stream());
 };
-var apiProxy = proxy("/api",
-    {
-        target: 'http://localhost:8081',
-        changeOrigin: true,
-        pathRewrite: {
-            '^/api': '/' // rewrite path
-        },
-        onProxyReq(proxyReq, req, res) {
-            // add custom header to request
-            // proxyReq.setHeader('x-added', 'foobar');
-            // or log the req
-            console.log("add custom header to request");
-        },
-        onError(err, req, res) {
-            res.writeHead(500, {
-                'Content-Type': 'text/plain'
-            })
-            res.end(
-                'Something went wrong. '
-            )
-        }
-    }
-);
 
 gulp.task('scripts', function () {
     return gulp.src([
@@ -64,13 +42,22 @@ gulp.task('sass-minify', function () {
     return compileSASS('custom.min.css', {style: 'compressed'});
 });
 
-gulp.task('browser-sync', function () {
-    browserSync.init({
-        server: {
-            baseDir: './',
-            middleware: [apiProxy]
-        },
-        startPath: './production/login.html'
+gulp.task('browser-sync', ['nodemon'], function () {
+    browserSync.init(null, {
+        proxy: "http://localhost:5000",
+        port: 7000,
+        open: false
+    });
+});
+gulp.task('nodemon', function (cb) {
+    var started = false;
+    return nodemon({
+        script: 'app.js'
+    }).on('start', function () {
+        if (!started) {
+            cb();
+            started = true;
+        }
     });
 });
 
@@ -84,4 +71,4 @@ gulp.task('watch', function () {
 });
 
 // Default Task
-gulp.task('default', ['browser-sync', 'watch', 'scripts']);
+gulp.task('default', ['scripts', 'browser-sync', 'watch']);

@@ -5042,10 +5042,11 @@ $(document).ready(function() {
     init_autocomplete();
 
 });
+/*
 
-/**
+/!**
  * 异步登录
- */
+ *!/
 $("#login_form").submit(function (e) {
     e.preventDefault();
     var submit = true;
@@ -5054,22 +5055,24 @@ $("#login_form").submit(function (e) {
     //     submit = false;
     // }
     if (submit) {
-        $("#login_form").ajaxSubmit({
-            url: "/api/home/login",
+        $(this).ajaxSubmit({
+            url: "/login",
             type: "post",
             clearForm: false,
             timeout: 100000,
+            // target:'#rfFrame',
             beforeSubmit: function (data, jqform, options) {
                 console.log("准备提交。。。");
             },
-            success: function (data) {
-                if (data.statusCode === "200") {
+            success: function (body) {
+                if (body.statusCode === "200") {
                     //验证成功
-                    console.log("验证成功:"+JSON.stringify(data.data));
-                    window.location.href="index.html"
+                    console.log("验证成功:"+JSON.stringify(body.data));
+                    req.session.user = body.data; // 登录成功，设置 session
+                    res.redirect('/index');
                 } else {
                     //验证失败
-                    alert(data.message);
+                    alert(body.message);
                 }
             },
             error: function (response) {
@@ -5078,3 +5081,4 @@ $("#login_form").submit(function (e) {
         });
     }
 })
+*/
