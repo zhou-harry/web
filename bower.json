@@ -78,10 +78,14 @@
     "DateJS": "^1.0.0-rc3",
     "flot.curvedlines": "^1.1.1",
     "flot.orderbars": "*",
-    "flot-spline": "^0.8.2"
+    "flot-spline": "^0.8.2",
+    "ejs": "https://github.com/mde/ejs.git"
   },
   "resolutions": {
     "jquery": "^2.2.3",
     "fastclick": "^1.0.6"
+  },
+  "dependencies": {
+    "gentelella": "^1.4.0"
   }
 }

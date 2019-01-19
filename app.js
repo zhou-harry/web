@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({extended: false})
 var ajax = require('ajax-request');
 // var routes = require('./routes')(app);
-var server="http://localhost:8081/";
+var server = "http://localhost:8081/";
 
 /*静态文件路由*/
 app.use(express.static('production'));
@@ -46,15 +46,15 @@ var apiProxy = proxy("/api",
 /**
  * Add the proxy to express
  */
-app.use('/api', apiProxy)
+// app.use('/api', apiProxy)
 
 /*使用 session 中间件*/
 app.use(session({
-    secret :  'secret', // 对session id 相关的cookie 进行签名
-    resave : true,
+    secret: 'secret', // 对session id 相关的cookie 进行签名
+    resave: true,
     saveUninitialized: false, // 是否保存未初始化的会话
-    cookie : {
-        maxAge : 1000 * 60 * 30, // 设置 session 的有效时间，单位毫秒
+    cookie: {
+        maxAge: 1000 * 60 * 30, // 设置 session 的有效时间，单位毫秒
     },
 }));
 /*cookie*/
@@ -67,33 +67,83 @@ app.listen(5000);
 app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname + '/production/login.html'));
 });
-app.get('/index', function (req, res) {
-    res.render('index1',{ title: '测试的标题',message:'这是一个消息内容'});
-});;
 
-//登录
-app.post("/login", urlencodedParser, function (req, response) {
-    var user = {
-        userId: req.body.userId,
-        password: req.body.password,
-
-    }
-    console.log("主页 POST 请求:"+JSON.stringify(user));
+/**
+ * 登录(账号验证)
+ */
+app.post("/login", urlencodedParser, function (req, res, next) {
+    console.log("登录(账号验证):" + JSON.stringify(req.body));
     ajax({
-        url: server+"home/login",
+        url: server + "home/login",
         method: "POST",
-        data: user
-    }, function (err, res, body) {
+        data: req.body
+    }, function (err, response, body) {
         var obj = JSON.parse(body);
-        console.log(obj);
+        console.log("返回：" + JSON.stringify(obj));
         if ("200" === obj.statusCode) {
-            req.session.user = obj.data;
-            response.render('index1', obj.data);
+            req.session.sessionToken = obj.data.sessionToken;
+            res.user = obj.data;
+            next();
         } else {
             console.log(obj.message);
-            response.redirect("/");
+            res.redirect("/");
         }
     });
+})
+/**
+ * 登录(获取用户信息)
+ */
+app.post("/login", urlencodedParser, function (req, res, next) {
+    console.log("登录(获取用户信息)");
+    ajax({
+        url: server + "user/getInfo",
+        method: "GET",
+        headers: {
+            Authorization: req.session.sessionToken
+        }
+    }, function (err, response, body) {
+        var obj = JSON.parse(body);
+        console.log("返回：" + JSON.stringify(obj));
+        if ("200" === obj.statusCode) {
+            res.info = obj.data;
+            next();
+        } else {
+            console.log(obj.message);
+            res.redirect("/");
+        }
+    });
+})
+/**
+ * 登录(加载菜单)
+ */
+app.post("/login", urlencodedParser, function (req, res, next) {
+    console.log("登录(加载菜单)");
+    ajax({
+        url: server + "menu/initSides",
+        method: "GET",
+        headers: {
+            Authorization: req.session.sessionToken
+        }
+    }, function (err, response, body) {
+        var obj = JSON.parse(body);
+        console.log("返回：" + JSON.stringify(obj));
+        if ("200" === obj.statusCode) {
+            //跳转主页
+            res.render('index_', {
+                user: res.user,
+                info: res.info,
+                menus:obj.data
+            });
+        } else {
+            console.log(obj.message);
+            res.redirect("/");
+        }
+    });
+})
 
-
+app.get("/content",urlencodedParser,function (req, res) {
+    res.render('dashboard',{count:'1500'});
+})
+app.get("/test",urlencodedParser,function (req, res) {
+    res.render('test',{errornumber:'403'});
 })
