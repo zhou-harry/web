@@ -147,3 +147,6 @@ app.get("/content",urlencodedParser,function (req, res) {
 app.get("/test",urlencodedParser,function (req, res) {
     res.render('test',{errornumber:'403'});
 })
+app.get("/profile",urlencodedParser,function (req, res) {
+    res.render('profile',{name:'管理员'});
+})
