@@ -34,7 +34,7 @@
                         </a>
                         <ul class="nav child_menu">
                             <% sitem.forEach(function(sub){%>
-                            <li><a href="javascript:sidenav('/<%= sub.url%>');"><%= sub.name%></a></li>
+                            <li><a href="javascript:nav_get('/<%= sub.url%>');"><%= sub.name%></a></li>
                             <% }) %>
                         </ul>
                     </li>
