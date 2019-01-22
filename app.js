@@ -106,6 +106,7 @@ app.post("/login", urlencodedParser, function (req, res, next) {
         console.log("返回：" + JSON.stringify(obj));
         if ("200" === obj.statusCode) {
             res.info = obj.data;
+            req.session.user=obj.data;
             next();
         } else {
             console.log(obj.message);
@@ -148,5 +149,24 @@ app.get("/test",urlencodedParser,function (req, res) {
     res.render('test',{errornumber:'403'});
 })
 app.get("/profile",urlencodedParser,function (req, res) {
-    res.render('profile',{name:'管理员'});
+    ajax({
+        url: server + "user/getTags?userid="+req.session.user.userId,
+        method: "GET",
+        headers: {
+            Authorization: req.session.sessionToken
+        }
+    }, function (err, response, body) {
+        var obj = JSON.parse(body);
+        console.log("返回：" + JSON.stringify(obj));
+        if ("200" === obj.statusCode) {
+            //跳转主页
+            res.render('profile', {
+                user: req.session.user,
+                tags:obj.data
+            });
+        } else {
+            console.log(obj.message);
+            res.redirect("/");
+        }
+    });
 })
