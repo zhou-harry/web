@@ -7,6 +7,11 @@ var cookie = require('cookie-parser');
 var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({extended: false})
 var ajax = require('ajax-request');
+let multer = require('multer');
+let upload = multer();
+var FormData = require('form-data');
+var http = require('http');
+
 // var routes = require('./routes')(app);
 var server = "http://localhost:8081/";
 
@@ -19,15 +24,16 @@ app.set('views', path.join(__dirname, 'production'));
 app.engine('html', require('ejs').__express);
 app.set('view engine', 'html');
 
+
 /*代理*/
-var apiProxy = proxy("/api",
-    {
-        target: 'http://localhost:8081',
+var apiProxy = proxy({
+        target: server,
         changeOrigin: true,
         pathRewrite: {
             '^/api': '/' // rewrite path
         },
         onProxyReq(proxyReq, req, res) {
+            proxyReq.setHeader('Authorization', req.session.sessionToken)
             console.log("proxy requeset");
         },
         onProxyRes(proxyRes, req, res) {
@@ -46,9 +52,12 @@ var apiProxy = proxy("/api",
 /**
  * Add the proxy to express
  */
-// app.use('/api', apiProxy)
+app.use('/api', apiProxy)
 
 /*使用 session 中间件*/
+app.enable('trust proxy');
+app.set("trust proxy", 1);
+
 app.use(session({
     secret: 'secret', // 对session id 相关的cookie 进行签名
     resave: true,
@@ -106,7 +115,7 @@ app.post("/login", urlencodedParser, function (req, res, next) {
         console.log("返回：" + JSON.stringify(obj));
         if ("200" === obj.statusCode) {
             res.info = obj.data;
-            req.session.user=obj.data;
+            req.session.user = obj.data;
             next();
         } else {
             console.log(obj.message);
@@ -133,7 +142,7 @@ app.post("/login", urlencodedParser, function (req, res, next) {
             res.render('index_', {
                 user: res.user,
                 info: res.info,
-                menus:obj.data
+                menus: obj.data
             });
         } else {
             console.log(obj.message);
@@ -141,16 +150,24 @@ app.post("/login", urlencodedParser, function (req, res, next) {
         }
     });
 })
-
-app.get("/content",urlencodedParser,function (req, res) {
-    res.render('dashboard',{count:'1500'});
+/**
+ * 控制台
+ */
+app.get("/dashboard", urlencodedParser, function (req, res) {
+    res.render('dashboard', {count: '1500'});
 })
-app.get("/test",urlencodedParser,function (req, res) {
-    res.render('test',{errornumber:'403'});
+/**
+ *错误页面
+ */
+app.get("/error", urlencodedParser, function (req, res) {
+    res.render('error', {errornumber: '403'});
 })
-app.get("/profile",urlencodedParser,function (req, res) {
+/**
+ * 用户资料
+ */
+app.get("/profile", urlencodedParser, function (req, res) {
     ajax({
-        url: server + "user/getTags?userid="+req.session.user.userId,
+        url: server + "user/getTags?userid=" + req.session.user.userId,
         method: "GET",
         headers: {
             Authorization: req.session.sessionToken
@@ -159,14 +176,76 @@ app.get("/profile",urlencodedParser,function (req, res) {
         var obj = JSON.parse(body);
         console.log("返回：" + JSON.stringify(obj));
         if ("200" === obj.statusCode) {
-            //跳转主页
             res.render('profile', {
                 user: req.session.user,
-                tags:obj.data
+                tags: obj.data
             });
         } else {
             console.log(obj.message);
             res.redirect("/");
         }
+    });
+})
+/**
+ * 用户列表
+ */
+app.get("/userlist", urlencodedParser, function (req, res) {
+    ajax({
+        url: server + "user/getInfos",
+        method: "POST",
+        data: {},
+        headers: {
+            Authorization: req.session.sessionToken
+        }
+    }, function (err, response, body) {
+        var obj = JSON.parse(body);
+        console.log("userlist返回：" + JSON.stringify(obj));
+        if ("200" === obj.statusCode) {
+            res.render('user_list', {items: obj.data});
+        } else {
+            console.log(obj.message);
+            res.redirect("/");
+        }
+    });
+})
+/**
+ * 批量注册
+ */
+app.get("/bulkRegistration", urlencodedParser, function (req, res) {
+    res.render('register_list');
+})
+/**
+ * 批量用户数据上传
+ */
+app.post("/uploadUsers", upload.any(), function (req, res) {
+    console.log('get FormData files: ', req.files);
+    req.headers['Authorization']= req.session.sessionToken;
+    console.log('headers: ', req.headers);
+    // ajax({
+    //     url: server + "user/uploadUsers",
+    //     method: "POST",
+    //     data: req.files[0],
+    //     headers: req.headers
+    // }, function (err, response, body) {
+    //     var obj = JSON.parse(body);
+    //     console.log("uploadUsers返回：" + JSON.stringify(obj));
+    //     if ("200" === obj.statusCode) {
+    //
+    //     } else {
+    //         console.log(obj.message);
+    //     }
+    // });
+    var form = new FormData();
+    form.append(req.files);//'file'是服务器接受的key
+
+    form.submit({
+        host: server,
+        path: 'user/uploadUsers',
+        headers: req.headers
+    }, function(err, httpResponse, body) {
+        if (err) {
+            return console.error('upload failed:', err);
+        }
+        console.log('Upload successful!  Server responded with:', body);
     });
 })

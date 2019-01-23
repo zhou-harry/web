@@ -41,12 +41,15 @@
   },
   "dependencies": {
     "ajax-request": "^1.2.3",
+    "connect-multiparty": "^2.2.0",
     "cookie-parser": "^1.4.3",
     "ejs": "^2.6.1",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
+    "form-data": "^2.3.3",
     "gulp-nodemon": "^2.4.2",
     "http-proxy-middleware": "^0.19.1",
-    "jquery-form": "^4.2.2"
+    "jquery-form": "^4.2.2",
+    "multer": "^1.4.1"
   }
 }

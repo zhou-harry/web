@@ -12,6 +12,9 @@ module.exports = function (app) {
         res.header("Content-Type", "application/json;charset=utf-8");
         next();
     });
-    app.use('/', routes);
     app.use('/login', routes);
+    app.use('/dashboard', routes);
+    app.use('/error', routes);
+    app.use('/profile', routes);
+    app.use('/userlist', routes);
 }

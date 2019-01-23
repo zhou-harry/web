@@ -1,0 +1,82 @@
+<div class="page-title">
+    <div class="title_left">
+        <h3>Form Upload </h3>
+    </div>
+
+    <div class="title_right">
+        <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search for...">
+                <span class="input-group-btn">
+                      <button class="btn btn-default" type="button">Go!</button>
+                    </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="clearfix"></div>
+
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Dropzone multiple file uploader</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                           aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Settings 1</a>
+                            </li>
+                            <li><a href="#">Settings 2</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <p>Drag multiple files to the box below for multi upload or click to select files. This is for
+                    demonstration purposes only, the files are not uploaded to any server.</p>
+                <form action="/registerList" class="dropzone" id="dropzone"></form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $().ready(function () {
+        $("#dropzone").dropzone({
+            url: "/uploadUsers", //必须填写
+            method: "post",  //也可用put
+            maxFiles: 5,//一次性上传的文件数量上限
+            maxFilesize: 20, //MB
+            acceptedFiles: ".xls,.xlsx", //上传的类型
+            parallelUploads: 3,
+            dictMaxFilesExceeded: "您最多只能上传5个文件！",
+            dictResponseError: '文件上传失败!',
+            dictInvalidFileType: "你不能上传该类型文件,文件类型只能是*.xls,*.xlsx。",
+            dictFallbackMessage: "浏览器不受支持",
+            dictFileTooBig: "文件过大上传文件最大支持.",
+            init: function () {
+                this.on("addedfile", function (file) {
+                    //上传文件时触发的事件
+                    console.log("上传文件时触发的事件");
+                });
+                this.on("queuecomplete", function (file) {
+                    //上传完成后触发的方法
+                    console.log("上传完成后触发的方法");
+                });
+                this.on("removedfile", function (file) {
+                    //删除文件时触发的方法
+                    console.log("删除文件时触发的事件");
+                });
+            }
+        })
+    })
+</script>

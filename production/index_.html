@@ -18,14 +18,20 @@
     <link href="/nprogress/nprogress.css" rel="stylesheet">
     <!-- iCheck -->
     <link href="/iCheck/skins/flat/green.css" rel="stylesheet">
-
     <!-- bootstrap-progressbar -->
     <link href="/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet">
     <!-- JQVMap -->
     <link href="/jqvmap/dist/jqvmap.min.css" rel="stylesheet"/>
     <!-- bootstrap-daterangepicker -->
     <link href="/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet">
-
+    <!-- Datatables -->
+    <link href="/datatables.net-bs/css/dataTables.bootstrap.min.css" rel="stylesheet">
+    <link href="/datatables.net-buttons-bs/css/buttons.bootstrap.min.css" rel="stylesheet">
+    <link href="/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css" rel="stylesheet">
+    <link href="/datatables.net-responsive-bs/css/responsive.bootstrap.min.css" rel="stylesheet">
+    <link href="/datatables.net-scroller-bs/css/scroller.bootstrap.min.css" rel="stylesheet">
+    <!-- Dropzone.js -->
+    <link href="/dropzone/dist/min/dropzone.min.css" rel="stylesheet">
     <!-- Custom Theme Style -->
     <link href="/css/custom.min.css" rel="stylesheet">
 </head>
@@ -94,37 +100,83 @@
 <!-- morris.js -->
 <script src="/raphael/raphael.min.js"></script>
 <script src="/morris.js/morris.min.js"></script>
-
-<!-- Custom Theme Scripts -->
-<script src="/js/custom.min.js"></script>
-
+<!-- Datatables -->
+<script src="/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<script src="/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+<script src="/datatables.net-buttons/js/buttons.flash.min.js"></script>
+<script src="/datatables.net-buttons/js/buttons.html5.min.js"></script>
+<script src="/datatables.net-buttons/js/buttons.print.min.js"></script>
+<script src="/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js"></script>
+<script src="/datatables.net-keytable/js/dataTables.keyTable.min.js"></script>
+<script src="/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/datatables.net-responsive-bs/js/responsive.bootstrap.js"></script>
+<script src="/datatables.net-scroller/js/dataTables.scroller.min.js"></script>
+<script src="/jszip/dist/jszip.min.js"></script>
+<script src="/pdfmake/build/pdfmake.min.js"></script>
+<script src="/pdfmake/build/vfs_fonts.js"></script>
+<!--dropzone-->
+<script src="/dropzone/dist/min/dropzone.min.js"></script>
+<!--初始化-->
 <script type="text/javascript">
     $().ready(function () {
         $.ajax({
-            url:"/content",
-            type:"GET",
+            url: "/dashboard",
+            type: "GET",
             // dataType:"json",
-            success:function (data) {
-                console.log("成功："+data);
+            success: function (data) {
                 $("#right_content").html(data);
+                $.getScript('/js/custom.min.js', function () {
+                    <!-- Custom Theme Scripts -->
+                });
             },
-            error:function (xhr, err, e) {
-                console.log("异常："+err);
+            error: function (xhr, err, e) {
+                console.log("异常：" + err);
             }
         });
     })
-    var nav_get=function (url) {
+    var nav_get = function (url) {
         $.ajax({
-            url:url,
-            type:"GET",
-            success:function (data) {
-                console.log("成功："+data);
+            url: url,
+            type: "GET",
+            success: function (data) {
                 $("#right_content").html(data);
+                $.getScript('/js/custom.min.js');
             },
-            error:function (xhr, err, e) {
-                console.log("异常："+err);
+            error: function (xhr, err, e) {
+                console.log("异常：" + err);
             }
         });
+    }
+    var init_dropzone = function () {
+        $("#dropzone").dropzone({
+            url: "/registerList", //必须填写
+            method: "post",  //也可用put
+            maxFiles: 5,//一次性上传的文件数量上限
+            maxFilesize: 20, //MB
+            acceptedFiles: ".xls,.xlsx", //上传的类型
+            parallelUploads: 3,
+            dictMaxFilesExceeded: "您最多只能上传5个文件！",
+            dictResponseError: '文件上传失败!',
+            dictInvalidFileType: "你不能上传该类型文件,文件类型只能是*.xls,*.xlsx。",
+            dictFallbackMessage: "浏览器不受支持",
+            dictFileTooBig: "文件过大上传文件最大支持.",
+            init: function () {
+                this.on("addedfile", function (file) {
+                    //上传文件时触发的事件
+                    alert("上传文件时触发的事件");
+                });
+                this.on("queuecomplete", function (file) {
+                    //上传完成后触发的方法
+                    alert("上传完成后触发的方法");
+                });
+                this.on("removedfile", function (file) {
+                    //删除文件时触发的方法
+                    alert("删除文件时触发的事件");
+                });
+            }
+        })
     }
 </script>
 </body>
